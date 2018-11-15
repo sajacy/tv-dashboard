@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+<style type="text/css">
+body { margin:0; padding:0; }
+iframe { height: 100%; width:100%; }
+</style>
+<script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"/>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+</head>
+<body>
+<iframe id="f" src="#" frameborder="0" style="overflow:hidden;overflow-x:hidden;overflow-y:hidden;height:100%;width:100%;position:absolute;top:0px;left:0px;right:0px;bottom:0px;" height="100%" width="100%">></iframe>
+<div id="praetorian"
+  style="cursor:pointer;font-family:serif,Times;position:absolute;bottom:0px;right:0px;width:30px;height:24px;z-index:2;filter: invert(100%);"
+  data-toggle="modal" data-target="#config">&pi;</div>
+
+<!-- modal for config -->
+<div id="config" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Configure</h4>
+      </div>
+      <div class="modal-body">
+        <h5>URLs</h5>
+        <div id="urls"></div>
+        <button id="add" class="pull-right btn btn-success">+ Add URL</button>
+        <h5>Refresh Interval</h5>
+        <div class="form-inline"><input id="interval" class="form-control" type="text" size="10"> ms</div>
+      </div>
+      <div class="modal-footer">
+        <button id="close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+<script>
+var config = {
+  "urls": [
+    "http://sajacy.github.io/tv-dashboard"
+  ], 
+  "refresh_interval": 3*60*1000 // 3 mins
+};
+
+(function(config) {
+  var urls = config.urls.map(function(s) { return s; }); //clone array
+  var refresh_interval = config.refresh_interval;
+  var render = function() { while(urls[0].length === 0) { next(); } $("#f").attr("src", urls[0]); renderConfig(); };
+  var next = function() { urls.push(urls.shift()); };
+  var prev = function() { urls.unshift(urls.pop()); };
+  var timer = null;
+  var resetTimer = function(off) {
+    clearInterval(timer);
+    console.log("Cleared timer");
+    if(!off) {
+      timer = setInterval(function() { next(); render(); }, refresh_interval);
+      console.log("set new timer");
+    }
+  }
+
+  var renderConfig = function() {
+    $("#urls").empty();
+    urls.forEach(function(url,i) { 
+      var row = $('<div class="form-group"><div class="input-group"><input class="form-control"/><div class="input-group-addon"><a class="glyphicon glyphicon-remove"></a></div></div></div>');
+      $("input", row).val(url).on("change", function(e) { urls[i] = $(this).val(); });
+      $("a", row).click(function(e) { urls.splice(i,1); renderConfig(); });
+      row.appendTo("#urls");
+    });
+    $("#interval").val(refresh_interval);
+  };
+
+  document.body.addEventListener("keydown", function(e) {
+    if (e.keyCode == 37) { console.log("Prev"); resetTimer(); prev(); render(); }
+    if (e.keyCode == 38) { console.log("Unpin"); resetTimer(); }
+    if (e.keyCode == 39) { console.log("Next"); resetTimer(); next(); render(); }
+    if (e.keyCode == 40) { console.log("Pin"); resetTimer(true); }
+  });
+
+  $("#praetorian").on("click", renderConfig);
+  $("#add").on("click", function(e) { urls.push(""); renderConfig(); });
+
+  render();
+  resetTimer();
+})(config);
+
+</script>
+</body>
+</html>
