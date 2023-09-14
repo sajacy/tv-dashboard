@@ -39,7 +39,7 @@ iframe { height: 100%; width:100%; }
 <script>
 var config = {
   "urls": [
-    "http://sajacy.github.io/tv-dashboard"
+    "https://www.ons.org.br/paginas/energia-agora/balanco-de-energia#DeltaPlaceHolderMain"
   ], 
   "refresh_interval": 3*60*1000 // 3 mins
 };
@@ -80,6 +80,7 @@ var config = {
 
   $("#praetorian").on("click", renderConfig);
   $("#add").on("click", function(e) { urls.push(""); renderConfig(); });
+  $("#interval").on("blur", function(e) { refresh_interval = $("#interval").val(); resetTimer();} )
 
   render();
   resetTimer();
